@@ -11,6 +11,7 @@ type Props = {
   onSelect: (sort: string) => void;
   query: string;
   sort: string;
+  buttonProps?: React.ComponentProps<typeof DropdownControl>['buttonProps'];
 };
 
 export function getSortTooltip(key: IssueSortOptions) {
@@ -33,7 +34,7 @@ export function getSortTooltip(key: IssueSortOptions) {
   }
 }
 
-const IssueListSortOptions = ({onSelect, sort, query}: Props) => {
+const IssueListSortOptions = ({onSelect, sort, query, buttonProps}: Props) => {
   const sortKey = sort || IssueSortOptions.DATE;
 
   const getMenuItem = (key: IssueSortOptions): React.ReactNode => (
@@ -51,7 +52,10 @@ const IssueListSortOptions = ({onSelect, sort, query}: Props) => {
 
   return (
     <StyledDropdownControl
-      buttonProps={{prefix: t('Sort by')}}
+      buttonProps={{
+        prefix: t('Sort by'),
+        ...buttonProps,
+      }}
       label={getSortLabel(sortKey)}
     >
       <React.Fragment>

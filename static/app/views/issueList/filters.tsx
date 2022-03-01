@@ -5,7 +5,10 @@ import styled from '@emotion/styled';
 import GuideAnchor from 'sentry/components/assistant/guideAnchor';
 import DatePageFilter from 'sentry/components/datePageFilter';
 import EnvironmentPageFilter from 'sentry/components/environmentPageFilter';
+import PageFiltersBar from 'sentry/components/organizations/pageFiltersBar';
 import ProjectPageFilter from 'sentry/components/projectPageFilter';
+import {IconSort} from 'sentry/icons/iconSort';
+import {IconStack} from 'sentry/icons/iconStack';
 import ProjectsStore from 'sentry/stores/projectsStore';
 import space from 'sentry/styles/space';
 import {Organization, SavedSearch} from 'sentry/types';
@@ -28,6 +31,7 @@ type Props = {
   organization: Organization;
 
   query: string;
+  queryCount: number;
   savedSearch: SavedSearch;
   selectedProjects: number[];
   sort: string;
@@ -41,6 +45,7 @@ class IssueListFilters extends React.Component<Props> {
       organization,
       savedSearch,
       query,
+      queryCount,
       isSearchDisabled,
       sort,
       display,
@@ -79,7 +84,7 @@ class IssueListFilters extends React.Component<Props> {
                   width: 100%;
                 `}
               >
-                <IssueListSearchBar
+                <StyledSearchBar
                   organization={organization}
                   query={query || ''}
                   sort={sort}
@@ -96,10 +101,11 @@ class IssueListFilters extends React.Component<Props> {
           </ClassNames>
 
           {hasPageFilters ? (
-            <ProjectEnvironmentFilters>
-              <ProjectPageFilter />
-              <EnvironmentPageFilter />
-            </ProjectEnvironmentFilters>
+            <StyledPageFiltersBar>
+              <ProjectPageFilter borderless />
+              <EnvironmentPageFilter borderless />
+              <DatePageFilter borderless hidePin />
+            </StyledPageFiltersBar>
           ) : (
             <DropdownsWrapper hasIssuePercentDisplay={hasIssuePercentDisplay}>
               {hasIssuePercentDisplay && (
@@ -114,19 +120,37 @@ class IssueListFilters extends React.Component<Props> {
             </DropdownsWrapper>
           )}
         </SearchContainer>
-        {hasPageFilters && (
-          <IssueListDropdownsWrapper>
-            <DatePageFilter />
-            {hasIssuePercentDisplay && (
-              <IssueListDisplayOptions
-                onDisplayChange={onDisplayChange}
-                display={display}
-                hasMultipleProjectsSelected={hasMultipleProjectsSelected}
-                hasSessions={hasSessions}
+        {hasPageFilters && queryCount > 0 && (
+          <ResultsRow>
+            <QueryCount>{queryCount} results found</QueryCount>
+            <PageFiltersBar>
+              {hasIssuePercentDisplay && (
+                <IssueListDisplayOptions
+                  onDisplayChange={onDisplayChange}
+                  display={display}
+                  hasMultipleProjectsSelected={hasMultipleProjectsSelected}
+                  hasSessions={hasSessions}
+                  buttonProps={{
+                    prefix: undefined,
+                    borderless: true,
+                    icon: <IconStack size="sm" />,
+                    size: 'small',
+                  }}
+                />
+              )}
+              <IssueListSortOptions
+                sort={sort}
+                query={query}
+                onSelect={onSortChange}
+                buttonProps={{
+                  prefix: undefined,
+                  borderless: true,
+                  icon: <IconSort size="sm" />,
+                  size: 'small',
+                }}
               />
-            )}
-            <IssueListSortOptions sort={sort} query={query} onSelect={onSortChange} />
-          </IssueListDropdownsWrapper>
+            </PageFiltersBar>
+          </ResultsRow>
         )}
       </FilterContainer>
     );
@@ -134,41 +158,48 @@ class IssueListFilters extends React.Component<Props> {
 }
 
 const FilterContainer = styled('div')`
-  display: grid;
-  gap: ${space(1)};
-  margin-bottom: ${space(2)};
+  margin-bottom: ${space(1)};
 `;
 
 const SearchContainer = styled('div')<{
   hasIssuePercentDisplay?: boolean;
   hasPageFilters?: boolean;
 }>`
-  display: inline-grid;
-  gap: ${space(1)};
+  display: flex;
+  align-items: flex-start;
   width: 100%;
-
-  ${p =>
-    p.hasPageFilters
-      ? `
-    @media (min-width: ${p.theme.breakpoints[1]}) {
-      grid-template-columns: 3fr 2fr;
-    }
-  `
-      : `
-    @media (min-width: ${p.theme.breakpoints[p.hasIssuePercentDisplay ? 1 : 0]}) {
-      grid-template-columns: 1fr auto;
-    }
-  }`}
+  margin-bottom: ${space(2)};
 
   @media (max-width: ${p => p.theme.breakpoints[0]}) {
-    grid-template-columns: 1fr;
+    flex-wrap: wrap;
   }
 `;
 
-const ProjectEnvironmentFilters = styled('div')`
-  display: grid;
-  gap: ${space(1)};
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+const StyledSearchBar = styled(IssueListSearchBar)`
+  width: 100%;
+`;
+
+const StyledPageFiltersBar = styled(PageFiltersBar)`
+  width: 28rem;
+  margin-left: ${space(1)};
+
+  & > * {
+    flex: 1 1 50%;
+  }
+
+  @media (max-width: ${p => p.theme.breakpoints[2]}) {
+    width: 24rem;
+  }
+
+  @media (max-width: ${p => p.theme.breakpoints[1]}) {
+    width: 20rem;
+  }
+
+  @media (max-width: ${p => p.theme.breakpoints[0]}) {
+    margin-left: ${space(0)};
+    margin-top: ${space(1)};
+    width: 100%;
+  }
 `;
 
 const DropdownsWrapper = styled('div')<{hasIssuePercentDisplay?: boolean}>`
@@ -176,17 +207,24 @@ const DropdownsWrapper = styled('div')<{hasIssuePercentDisplay?: boolean}>`
   gap: ${space(1)};
   grid-template-columns: 1fr ${p => (p.hasIssuePercentDisplay ? '1fr' : '')};
   align-items: start;
+  margin-left: ${space(1)};
 
   @media (max-width: ${p => p.theme.breakpoints[0]}) {
     grid-template-columns: 1fr;
   }
 `;
 
-const IssueListDropdownsWrapper = styled('div')`
-  display: grid;
-  gap: ${space(1)};
-  grid-auto-columns: max-content;
-  grid-auto-flow: column;
+const QueryCount = styled('p')`
+  font-size: ${p => p.theme.fontSizeLarge};
+  font-weight: 600;
+  color: ${p => p.theme.headingColor};
+  margin-bottom: 0;
+`;
+
+const ResultsRow = styled('div')`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 export default IssueListFilters;

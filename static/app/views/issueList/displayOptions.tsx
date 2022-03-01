@@ -13,6 +13,7 @@ type Props = {
   hasMultipleProjectsSelected: boolean;
   hasSessions: boolean;
   onDisplayChange: (display: string) => void;
+  buttonProps?: React.ComponentProps<typeof DropdownControl>['buttonProps'];
 };
 
 const IssueListDisplayOptions = ({
@@ -20,6 +21,7 @@ const IssueListDisplayOptions = ({
   display,
   hasSessions,
   hasMultipleProjectsSelected,
+  buttonProps,
 }: Props) => {
   const getMenuItem = (key: IssueDisplayOptions): React.ReactNode => {
     let tooltipText: string | undefined;
@@ -67,6 +69,7 @@ const IssueListDisplayOptions = ({
       <StyledDropdownControl
         buttonProps={{
           prefix: t('Display'),
+          ...buttonProps,
         }}
         buttonTooltipTitle={
           display === IssueDisplayOptions.SESSIONS

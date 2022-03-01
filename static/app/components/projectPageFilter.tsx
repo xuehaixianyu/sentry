@@ -5,7 +5,7 @@ import isEqual from 'lodash/isEqual';
 import partition from 'lodash/partition';
 
 import {updateProjects} from 'sentry/actionCreators/pageFilters';
-import DropdownButton from 'sentry/components/dropdownButton';
+import DropdownButton from 'sentry/components/dropdownButtonV2';
 import MultipleProjectSelector from 'sentry/components/organizations/multipleProjectSelector';
 import PlatformList from 'sentry/components/platformList';
 import {ALL_ACCESS_PROJECTS} from 'sentry/constants/pageFilters';
@@ -21,6 +21,11 @@ import useProjects from 'sentry/utils/useProjects';
 
 type Props = {
   router: WithRouterProps['router'];
+
+  /**
+   * Whether the trigger button should be borderless
+   */
+  borderless?: boolean;
 
   /**
    * Message to display at the bottom of project list
@@ -63,7 +68,12 @@ type Props = {
   specificProjectSlugs?: string[];
 };
 
-export function ProjectPageFilter({router, specificProjectSlugs, ...otherProps}: Props) {
+export function ProjectPageFilter({
+  router,
+  specificProjectSlugs,
+  borderless,
+  ...otherProps
+}: Props) {
   const [currentSelectedProjects, setCurrentSelectedProjects] = useState<number[] | null>(
     null
   );
@@ -117,7 +127,7 @@ export function ProjectPageFilter({router, specificProjectSlugs, ...otherProps}:
       <IconProject />
     );
     return (
-      <StyledDropdownButton isOpen={isOpen} {...getActorProps()}>
+      <StyledDropdownButton isOpen={isOpen} borderless={borderless} {...getActorProps()}>
         <DropdownTitle>
           {icon}
           <TitleContainer>{title}</TitleContainer>
@@ -147,14 +157,17 @@ export function ProjectPageFilter({router, specificProjectSlugs, ...otherProps}:
       customDropdownButton={customProjectDropdown}
       customLoadingIndicator={customLoadingIndicator}
       pinned={pinnedFilters.has('projects')}
+      detached
       {...otherProps}
     />
   );
 }
 
 const StyledDropdownButton = styled(DropdownButton)`
+  font-weight: 600;
   width: 100%;
-  height: 40px;
+  height: 100%;
+  min-height: auto;
   text-overflow: ellipsis;
 `;
 
@@ -173,4 +186,4 @@ const DropdownTitle = styled('div')`
   flex: 1;
 `;
 
-export default withRouter(ProjectPageFilter);
+export default withRouter<Props>(ProjectPageFilter);

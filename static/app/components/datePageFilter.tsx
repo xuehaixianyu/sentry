@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 
 import {pinFilter, updateDateTime} from 'sentry/actionCreators/pageFilters';
 import Button from 'sentry/components/button';
-import DropdownButton from 'sentry/components/dropdownButton';
+import DropdownButton from 'sentry/components/dropdownButtonV2';
 import TimeRangeSelector, {
   ChangeData,
 } from 'sentry/components/organizations/timeRangeSelector';
@@ -24,9 +24,22 @@ type Props = Omit<
    * Reset these URL params when we fire actions (custom routing only)
    */
   resetParamsOnChange?: string[];
+
+  /**
+   * Whether the trigger button should be borderless
+   */
+  borderless?: boolean;
+
+  hidePin?: boolean;
 };
 
-function DatePageFilter({router, resetParamsOnChange, ...props}: Props) {
+function DatePageFilter({
+  router,
+  resetParamsOnChange,
+  borderless,
+  hidePin,
+  ...props
+}: Props) {
   const {selection, pinnedFilters} = useLegacyStore(PageFiltersStore);
   const organization = useOrganization();
   const {start, end, period, utc} = selection.datetime;
@@ -61,7 +74,12 @@ function DatePageFilter({router, resetParamsOnChange, ...props}: Props) {
     }
 
     return (
-      <StyledDropdownButton isOpen={isOpen} icon={<IconCalendar />} {...getActorProps()}>
+      <StyledDropdownButton
+        isOpen={isOpen}
+        icon={<IconCalendar />}
+        borderless={borderless}
+        {...getActorProps()}
+      >
         <DropdownTitle>
           <TitleContainer>{label}</TitleContainer>
         </DropdownTitle>
@@ -80,31 +98,35 @@ function DatePageFilter({router, resetParamsOnChange, ...props}: Props) {
         onUpdate={handleUpdate}
         label={<IconCalendar color="textColor" />}
         customDropdownButton={customDropdownButton}
+        detached
         {...props}
       />
-      <PinButton
-        aria-pressed={isDatePinned}
-        aria-label={t('Pin')}
-        onClick={handlePinClick}
-        size="zero"
-        icon={<IconPin size="xs" isSolid={isDatePinned} />}
-        borderless
-      />
+      {!hidePin && (
+        <PinButton
+          aria-pressed={isDatePinned}
+          aria-label={t('Pin')}
+          onClick={handlePinClick}
+          size="zero"
+          icon={<IconPin size="xs" isSolid={isDatePinned} />}
+          borderless
+        />
+      )}
     </DateSelectorContainer>
   );
 }
 
 const DateSelectorContainer = styled('div')`
-  display: grid;
-  gap: ${space(1)};
+  position: relative;
+  display: flex;
   align-items: center;
-  grid-auto-flow: column;
-  grid-auto-columns: max-content;
+  flex: 0 0 fit-content;
 `;
 
 const StyledPageTimeRangeSelector = styled(PageTimeRangeSelector)`
-  height: 40px;
   font-weight: 600;
+  width: 100%;
+  height: 100%;
+  min-height: auto;
   background: ${p => p.theme.background};
   border: none;
   box-shadow: none;
@@ -112,7 +134,8 @@ const StyledPageTimeRangeSelector = styled(PageTimeRangeSelector)`
 
 const StyledDropdownButton = styled(DropdownButton)`
   width: 100%;
-  height: 40px;
+  height: 100%;
+  min-height: auto;
   text-overflow: ellipsis;
 `;
 
@@ -134,6 +157,7 @@ const PinButton = styled(Button)`
   display: block;
   color: ${p => p.theme.gray300};
   background: transparent;
+  margin-left: ${space(1)};
 `;
 
-export default withRouter(DatePageFilter);
+export default withRouter<Props>(DatePageFilter);

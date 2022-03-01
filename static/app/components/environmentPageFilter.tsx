@@ -3,7 +3,7 @@ import {withRouter, WithRouterProps} from 'react-router';
 import styled from '@emotion/styled';
 
 import {updateEnvironments} from 'sentry/actionCreators/pageFilters';
-import DropdownButton from 'sentry/components/dropdownButton';
+import DropdownButton from 'sentry/components/dropdownButtonV2';
 import MultipleEnvironmentSelector from 'sentry/components/organizations/multipleEnvironmentSelector';
 import {IconWindow} from 'sentry/icons';
 import {t} from 'sentry/locale';
@@ -15,13 +15,19 @@ import useProjects from 'sentry/utils/useProjects';
 
 type Props = {
   router: WithRouterProps['router'];
+
+  /**
+   * Whether the trigger button should be borderless
+   */
+  borderless?: boolean;
+
   /**
    * Reset these URL params when we fire actions (custom routing only)
    */
   resetParamsOnChange?: string[];
 };
 
-function EnvironmentPageFilter({router, resetParamsOnChange = []}: Props) {
+function EnvironmentPageFilter({router, resetParamsOnChange = [], borderless}: Props) {
   const {projects, initiallyLoaded: projectsLoaded} = useProjects();
   const organization = useOrganization();
   const {selection, pinnedFilters, isReady} = useLegacyStore(PageFiltersStore);
@@ -41,7 +47,7 @@ function EnvironmentPageFilter({router, resetParamsOnChange = []}: Props) {
 
   const customDropdownButton = ({isOpen, getActorProps, summary}) => {
     return (
-      <StyledDropdownButton isOpen={isOpen} {...getActorProps()}>
+      <StyledDropdownButton isOpen={isOpen} borderless={borderless} {...getActorProps()}>
         <DropdownTitle>
           <IconWindow />
           <TitleContainer>{summary}</TitleContainer>
@@ -71,13 +77,16 @@ function EnvironmentPageFilter({router, resetParamsOnChange = []}: Props) {
       customDropdownButton={customDropdownButton}
       customLoadingIndicator={customLoadingIndicator}
       pinned={pinnedFilters.has('environments')}
+      detached
     />
   );
 }
 
 const StyledDropdownButton = styled(DropdownButton)`
+  font-weight: 600;
   width: 100%;
-  height: 40px;
+  height: 100%;
+  min-height: auto;
 `;
 
 const TitleContainer = styled('div')`
@@ -95,4 +104,4 @@ const DropdownTitle = styled('div')`
   flex: 1;
 `;
 
-export default withRouter(EnvironmentPageFilter);
+export default withRouter<Props>(EnvironmentPageFilter);
