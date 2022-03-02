@@ -5,7 +5,7 @@ import isEqual from 'lodash/isEqual';
 import partition from 'lodash/partition';
 
 import {updateProjects} from 'sentry/actionCreators/pageFilters';
-import DropdownButton from 'sentry/components/dropdownButtonV2';
+import DropdownButton from 'sentry/components/dropdownButton';
 import MultipleProjectSelector from 'sentry/components/organizations/multipleProjectSelector';
 import PlatformList from 'sentry/components/platformList';
 import {ALL_ACCESS_PROJECTS} from 'sentry/constants/pageFilters';

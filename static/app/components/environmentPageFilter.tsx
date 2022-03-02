@@ -3,7 +3,7 @@ import {withRouter, WithRouterProps} from 'react-router';
 import styled from '@emotion/styled';
 
 import {updateEnvironments} from 'sentry/actionCreators/pageFilters';
-import DropdownButton from 'sentry/components/dropdownButtonV2';
+import DropdownButton from 'sentry/components/dropdownButton';
 import MultipleEnvironmentSelector from 'sentry/components/organizations/multipleEnvironmentSelector';
 import {IconWindow} from 'sentry/icons';
 import {t} from 'sentry/locale';

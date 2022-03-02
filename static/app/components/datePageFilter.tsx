@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 
 import {pinFilter, updateDateTime} from 'sentry/actionCreators/pageFilters';
 import Button from 'sentry/components/button';
-import DropdownButton from 'sentry/components/dropdownButtonV2';
+import DropdownButton from 'sentry/components/dropdownButton';
 import TimeRangeSelector, {
   ChangeData,
 } from 'sentry/components/organizations/timeRangeSelector';
