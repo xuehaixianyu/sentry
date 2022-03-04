@@ -294,8 +294,3 @@ export function parseChromeTraceArrayFormat(
     profiles,
   };
 }
-
-function importChromeTrace(profile: ChromeTrace.ProfileType) {
-  if (Array.isArray(profile)) {
-  }
-}
