@@ -3,11 +3,11 @@ import styled from '@emotion/styled';
 
 import space from 'sentry/styles/space';
 
-export const PageContent = styled('div')`
+export const PageContent = styled('div')<{noPadding?: boolean}>`
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: ${space(2)} ${space(4)} ${space(3)};
+  padding: ${p => (p.noPadding ? '0' : `${space(2)} ${space(4)} ${space(3)}`)};
   margin-bottom: -20px; /* <footer> has margin-top: 20px; */
 
   /* No footer at smallest breakpoint */
