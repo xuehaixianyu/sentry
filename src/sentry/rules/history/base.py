@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 class RuleGroupHistory:
     group: Group
     count: int
+    lastTriggered: datetime
 
 
 @dataclass(frozen=True)

@@ -16,11 +16,6 @@ if TYPE_CHECKING:
     from sentry.utils.cursors import Cursor, CursorResult
 
 
-def convert_results(results: Sequence[Mapping[str, int]]) -> Sequence[RuleGroupHistory]:
-    group_lookup = {g.id: g for g in Group.objects.filter(id__in=[r["group"] for r in results])}
-    return [RuleGroupHistory(group_lookup[r["group"]], r["count"]) for r in results]
-
-
 class PostgresRuleHistoryBackend(RuleHistoryBackend):
     def record(self, rule: Rule, group: Group) -> None:
         RuleFireHistory.objects.create(project=rule.project, rule=rule, group=group)
@@ -40,11 +35,32 @@ class PostgresRuleHistoryBackend(RuleHistoryBackend):
                 date_added__lt=end,
             )
             .select_related("group")
-            .values("group")
-            .annotate(count=Count("id"))
+            .distinct("group_id")
         )
+
+        def convert_results(results: Sequence[Mapping[str, int]]) -> Sequence[RuleGroupHistory]:
+            count_lookup = {
+                ruleHistory["group"]: ruleHistory["count"]
+                for ruleHistory in RuleFireHistory.objects.filter(
+                    rule=rule,
+                    group_id__in=[r.group_id for r in results],
+                    date_added__gte=start,
+                    date_added__lt=end,
+                )
+                .values("group")
+                .annotate(count=Count("group_id"))
+            }
+            return [
+                RuleGroupHistory(
+                    r.group,
+                    count_lookup[r.group_id],
+                    r.date_added,
+                )
+                for r in results
+            ]
+
         return OffsetPaginator(
-            qs, order_by=("-count", "group"), on_results=convert_results
+            qs, order_by=("group", "-date_added"), on_results=convert_results
         ).get_result(per_page, cursor)
 
     def fetch_rule_hourly_stats(

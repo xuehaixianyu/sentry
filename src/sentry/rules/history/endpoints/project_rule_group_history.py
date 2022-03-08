@@ -39,6 +39,7 @@ class RuleGroupHistorySerializer(Serializer):  # type: ignore
         return {
             "group": attrs["group"],
             "count": obj.count,
+            "lastTriggered": obj.lastTriggered,
         }
 
 
