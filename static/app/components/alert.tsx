@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 
 import {IconCheckmark, IconChevron, IconInfo, IconNot, IconWarning} from 'sentry/icons';
 import space from 'sentry/styles/space';
+import {defined} from 'sentry/utils';
 import {Theme} from 'sentry/utils/theme';
 
 export interface AlertProps extends React.HTMLProps<HTMLDivElement> {
@@ -11,16 +12,27 @@ export interface AlertProps extends React.HTMLProps<HTMLDivElement> {
   opaque?: boolean;
   showIcon?: boolean;
   system?: boolean;
+  trailingItems?: React.ReactNode[];
   type?: keyof Theme['alert'];
 }
 
 const DEFAULT_TYPE = 'info';
 
-const IconWrapper = styled('span')`
+const IconWrapper = styled('div')`
   display: flex;
   height: calc(${p => p.theme.fontSizeMedium} * ${p => p.theme.text.lineHeightBody});
   margin-right: ${space(1)};
   align-items: center;
+`;
+
+const TrailingItems = styled('div')`
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: 100%;
+  align-items: center;
+  gap: ${space(1)};
+  height: calc(${p => p.theme.fontSizeMedium} * ${p => p.theme.text.lineHeightBody});
+  margin-left: ${space(1)};
 `;
 
 const alertStyles = ({
@@ -115,6 +127,7 @@ const Alert = styled(
     className,
     showIcon = false,
     expand,
+    trailingItems,
     opaque: _opaque, // don't forward to `div`
     system: _system, // don't forward to `div`
     ...props
@@ -146,7 +159,12 @@ const Alert = styled(
         <MessageContainer>
           {showIcon && <IconWrapper>{getIcon()}</IconWrapper>}
           <StyledTextBlock>{children}</StyledTextBlock>
-          {showExpand && <ExpandIcon isExpanded={isExpanded} />}
+          {(showExpand || defined(trailingItems)) && (
+            <TrailingItems>
+              {trailingItems}
+              {showExpand && <ExpandIcon isExpanded={isExpanded} />}
+            </TrailingItems>
+          )}
         </MessageContainer>
         {showExpandItems && (
           <ExpandContainer>
