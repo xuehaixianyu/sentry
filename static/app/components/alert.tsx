@@ -38,6 +38,7 @@ const TrailingItems = styled('div')`
 const alertStyles = ({
   theme,
   type = DEFAULT_TYPE,
+  trailingItems,
   system,
   opaque,
   expand,
@@ -55,6 +56,8 @@ const alertStyles = ({
     background: ${opaque
       ? `linear-gradient(${alertColors.backgroundLight}, ${alertColors.backgroundLight}), linear-gradient(${theme.background}, ${theme.background})`
       : `${alertColors.backgroundLight}`};
+
+    ${defined(trailingItems) && `padding-right: ${space(1.5)};`}
 
     a:not([role='button']) {
       color: ${theme.textColor};
