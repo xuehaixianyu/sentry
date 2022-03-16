@@ -122,8 +122,6 @@ function Sidebar({location, organization}: Props) {
     }
 
     const globalSelectionRoutes = [
-      'alerts',
-      'alerts/rules',
       'dashboards',
       'issues',
       'releases',
