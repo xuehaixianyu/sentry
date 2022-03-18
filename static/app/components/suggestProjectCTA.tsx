@@ -8,7 +8,6 @@ import Alert from 'sentry/components/alert';
 import SuggestProjectModal from 'sentry/components/modals/suggestProjectModal';
 import {IconClose} from 'sentry/icons';
 import {tct} from 'sentry/locale';
-import space from 'sentry/styles/space';
 import {Organization, Project} from 'sentry/types';
 import {EntryRequest, Event} from 'sentry/types/event';
 import trackAdvancedAnalyticsEvent from 'sentry/utils/analytics/trackAdvancedAnalyticsEvent';
@@ -190,16 +189,14 @@ class SuggestProjectCTA extends Component<Props, State> {
 
   renderCTA() {
     return (
-      <Alert type="info">
-        <Content>
-          <span>
-            {tct(
-              'We have a sneaking suspicion you have a mobile app that doesn’t use Sentry. [link:Start Monitoring]',
-              {link: <a onClick={this.openModal} />}
-            )}
-          </span>
-          <StyledIconClose onClick={this.handleCTAClose} />
-        </Content>
+      <Alert
+        type="info"
+        trailingItems={<StyledIconClose onClick={this.handleCTAClose} />}
+      >
+        {tct(
+          'We have a sneaking suspicion you have a mobile app that doesn’t use Sentry. [link:Start Monitoring]',
+          {link: <a onClick={this.openModal} />}
+        )}
       </Alert>
     );
   }
@@ -210,12 +207,6 @@ class SuggestProjectCTA extends Component<Props, State> {
 }
 
 export default withApi(withProjects(SuggestProjectCTA));
-
-const Content = styled('div')`
-  display: grid;
-  grid-template-columns: 1fr max-content;
-  gap: ${space(1)};
-`;
 
 const StyledIconClose = styled(IconClose)`
   margin: auto;
