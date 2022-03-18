@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {css} from '@emotion/react';
 import styled from '@emotion/styled';
+import classNames from 'classnames';
 
 import {IconCheckmark, IconChevron, IconInfo, IconNot, IconWarning} from 'sentry/icons';
 import space from 'sentry/styles/space';
@@ -156,7 +157,7 @@ const Alert = styled(
     return (
       <div
         onClick={() => showExpand && setIsExpanded(!isExpanded)}
-        className={className}
+        className={classNames(type ? `ref-${type}` : '', className)}
         {...props}
       >
         <MessageContainer>
