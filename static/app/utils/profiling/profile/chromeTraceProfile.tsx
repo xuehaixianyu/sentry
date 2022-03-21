@@ -14,6 +14,13 @@ import {EventedProfile} from './eventedProfile';
 import {ProfileGroup} from './importProfile';
 
 export class ChromeTraceProfile extends EventedProfile {}
+export class TypeScriptProfile extends ChromeTraceProfile {
+  typeScriptTypeTree?: TypeScriptTypes.TypeTree;
+
+  setTypeScriptTypeTree(tree: TypeScriptTypes.TypeTree) {
+    this.typeScriptTypeTree = tree;
+  }
+}
 
 export function isChromeTraceFormat(input: any): input is ChromeTrace.ProfileType {
   return isChromeTraceArrayFormat(input) || isChromeTraceObjectFormat(input);
@@ -25,7 +32,9 @@ function isChromeTraceObjectFormat(input: any): input is ChromeTrace.ObjectForma
 
 function isChromeTraceArrayFormat(input: any): input is ChromeTrace.ArrayFormat {
   // @TODO we need to check if the profile actually includes the v8 profile nodes.
-  return Array.isArray(input);
+  return (
+    Array.isArray(input) && 'ph' in input[0] && 'ts' in input[0] && 'cat' in input[0]
+  );
 }
 
 export function importChromeTrace(input: string | ChromeTrace.ProfileType): ProfileGroup {
@@ -121,12 +130,12 @@ function buildProfile(
 
     // M events are not pushed to the queue, we just store their information
     if (event.ph === 'M') {
-      if (event.name === 'thread_name' && typeof event.args.name === 'string') {
+      if (event.name === 'thread_name' && typeof event?.args?.name === 'string') {
         threadName = `${event.args.name} (${threadId})`;
         continue;
       }
 
-      if (event.name === 'process_name' && typeof event.args.name === 'string') {
+      if (event.name === 'process_name' && typeof event?.args?.name === 'string') {
         processName = `${event.args.name} (${processId})`;
         continue;
       }
@@ -166,7 +175,12 @@ function buildProfile(
     throw new Error('First begin event contains no timestamp');
   }
 
-  const profile = new ChromeTraceProfile(
+  const ProfileConstructor =
+    beginQueue[beginQueue.length - 1].name === 'createProgram'
+      ? TypeScriptProfile
+      : ChromeTraceProfile;
+
+  const profile = new ProfileConstructor(
     0,
     0,
     0,

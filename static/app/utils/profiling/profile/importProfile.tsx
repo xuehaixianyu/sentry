@@ -4,6 +4,10 @@ import {
   isSampledProfile,
   isSchema,
 } from '../guards/profile';
+import {
+  importTypeScriptTypesJSONFile,
+  isTypeScriptTypesJSONFile,
+} from '../typescript/importTypeFile';
 
 import {importChromeTrace, isChromeTraceFormat} from './chromeTraceProfile';
 import {EventedProfile} from './eventedProfile';
@@ -111,10 +115,10 @@ function readFileAsString(file: File): Promise<string> {
   });
 }
 
-export async function importDroppedProfile(
+export async function importDroppedFile(
   file: File,
   parsers: JSONParser[] = TRACE_JSON_PARSERS
-): Promise<ProfileGroup> {
+): Promise<ProfileGroup | TypeScriptTypes.TypeTree> {
   try {
     return await readFileAsString(file)
       .then(fileContents => {
@@ -143,6 +147,10 @@ export async function importDroppedProfile(
 
         if (isChromeTraceFormat(json)) {
           return importChromeTrace(json);
+        }
+
+        if (isTypeScriptTypesJSONFile(json)) {
+          return importTypeScriptTypesJSONFile(json);
         }
 
         throw new Error('Unsupported JSON format');
