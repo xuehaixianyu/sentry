@@ -279,7 +279,7 @@ function createFrameInfoFromEvent(event: ChromeTrace.Event): Profiling.FrameInfo
 
   return {
     key,
-    name: `${event?.name || 'Unknown'} ${key}`.trim(),
+    name: event?.name || 'Unknown',
     meta: event.args,
   };
 }

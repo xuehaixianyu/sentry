@@ -107,31 +107,140 @@ export function isTypeScriptTypesJSONFile(
   return Array.isArray(input) && typeof input[0]?.id === 'number';
 }
 
+function getChildrenTypesToVisit(node: TypeScriptTypes.TypeDescriptor): number[] {
+  return node?.unionTypes ?? node?.intersectionTypes ?? node.typeArguments ?? [];
+}
 class TypeTree implements TypeScriptTypes.TypeTree {
   tree = {};
 
-  resolveTypeId(typeId: number): string {
-    if (this.tree[typeId]) {
-      return (
-        (this.tree[typeId].node.display || this.tree[typeId].node.symbolName) ??
-        'Unknown type'
-      );
-    }
-
-    return 'Unknown type';
-  }
-
-  indexType(type: TypeScriptTypes.TypeDescriptor): TypeScriptTypes.TreeNode {
-    this.tree[type.id] = {
-      node: {...type, flags: getTypeFlags(type.flags ?? [])},
+  resolveTypeTreeForId(
+    rootId: TypeScriptTypes.TypeDescriptor['id']
+  ): TypeScriptTypes.ResolvedTree | null {
+    const rootNode: TypeScriptTypes.ResolvedTree = {
+      type: this.queryByTypeId(rootId),
+      children: [],
     };
 
-    return this.tree[type.id];
+    const visit = (
+      parent: TypeScriptTypes.ResolvedTree,
+      typeId: TypeScriptTypes.TypeDescriptor['id']
+    ) => {
+      const node: TypeScriptTypes.ResolvedTree = {
+        type: this.queryByTypeId(typeId),
+        children: [],
+      };
+
+      if (node.type) {
+        getChildrenTypesToVisit(node.type).forEach(child => {
+          visit(node, child);
+        });
+      }
+
+      parent.children.push(node);
+    };
+
+    if (rootNode.type) {
+      getChildrenTypesToVisit(rootNode.type).forEach(child => {
+        visit(rootNode, child);
+      });
+    }
+
+    return rootNode;
   }
 
-  queryByTypeId(id: number): TypeScriptTypes.TreeNode | undefined {
+  queryByTypeId(id: number): TypeScriptTypes.TypeDescriptor | undefined {
     return this.tree[id];
   }
+
+  indexType(type: TypeScriptTypes.TypeDescriptor): TypeScriptTypes.TypeDescriptor {
+    this.tree[type.id] = {...type, flags: getTypeFlags(type.flags ?? [])};
+    return this.tree[type.id];
+  }
+}
+
+function getTypeName(node: TypeScriptTypes.TypeDescriptor): string | undefined {
+  return node.display || node.intrinsicName || node.symbolName;
+}
+
+export const TS_SYMBOLS: Partial<Record<TypeScriptTypes.TypeFlag, string>> = {
+  Union: '|',
+  Intersection: '&',
+};
+
+export function getResolvedTypescriptTypeName(
+  resolvedTree: TypeScriptTypes.ResolvedTree,
+  tree: TypeScriptTypes.TypeTree
+): string | undefined {
+  if (resolvedTree.type === undefined) {
+    throw new Error('Resolved node does not belong to type declaration');
+  }
+
+  function visit(child: TypeScriptTypes.ResolvedTree): string | undefined {
+    if (!child.type) {
+      throw new Error('Resolved node does not belong to type declaration');
+    }
+
+    const name = getTypeName(child.type);
+
+    if (name !== undefined) {
+      const typeArguments =
+        child.type.typeArguments?.map(id => {
+          const node = tree.queryByTypeId(id);
+          return node ? getTypeName(node) : undefined;
+        }) ?? [];
+
+      return typeArguments?.length > 0 ? `${name}<${typeArguments.join(', ')}>` : name;
+    }
+
+    const typestring: string[] = [];
+
+    for (let i = 0; i < child.children.length; i++) {
+      const names = visit(child.children[i]);
+
+      if (names) {
+        typestring.push(names);
+      }
+    }
+
+    if (!typestring.length) {
+      return undefined;
+    }
+
+    return `(${
+      child.type.flags
+        ? typestring.join(` ${TS_SYMBOLS[child.type.flags[0]]} `)
+        : typestring.join(' ')
+    })`;
+  }
+
+  const name = getTypeName(resolvedTree.type);
+
+  if (name !== undefined) {
+    const typeArguments =
+      resolvedTree.type.typeArguments?.map(id => {
+        const node = tree.queryByTypeId(id);
+        return node ? getTypeName(node) : undefined;
+      }) ?? [];
+
+    return typeArguments.length > 0 ? `${name}<${typeArguments.join(', ')}>` : name;
+  }
+
+  const typestring: string[] = [];
+
+  for (let i = 0; i < resolvedTree.children.length; i++) {
+    const names = visit(resolvedTree.children[i]);
+    if (names) {
+      typestring.push(names);
+    }
+  }
+
+  if (!typestring.length) {
+    return undefined;
+  }
+
+  return resolvedTree.type.flags
+    ? typestring.join(` ${TS_SYMBOLS[resolvedTree.type.flags[0]]} `)
+    : typestring.join(' ');
 }
 
 export function importTypeScriptTypesJSONFile(
@@ -150,8 +259,4 @@ export function importTypeScriptTypesJSONFile(
   }
 
   return tree;
-}
-
-export function formatTypeTreeNode(treeNode: TypeScriptTypes.TreeNode): string {
-  return treeNode.node.display || treeNode.node.symbolName || 'Unknown';
 }
