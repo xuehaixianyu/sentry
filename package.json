@@ -110,7 +110,7 @@
     "prop-types": "^15.8.1",
     "pyright": "1.1.229",
     "qrcode.react": "^1.0.1",
-    "query-string": "7.0.1",
+    "query-string": "7.1.1",
     "react": "17.0.2",
     "react-aria": "^3.12.0",
     "react-autosize-textarea": "7.1.0",
@@ -208,7 +208,7 @@
   "scripts": {
     "test": "node scripts/test.js",
     "test-precommit": "yarn test --bail --findRelatedTests -u",
-    "test-ci": "yarn test --ci --coverage",
+    "test-ci": "yarn test --ci --coverage --runInBand",
     "test-debug": "node --inspect-brk scripts/test.js --runInBand",
     "test-staged": "yarn test --findRelatedTests $(git diff --name-only --cached)",
     "lint": "yarn eslint tests/js static/app --ext .js,.jsx,.ts,.tsx",
