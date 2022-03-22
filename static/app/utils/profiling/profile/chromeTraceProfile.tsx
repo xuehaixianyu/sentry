@@ -185,11 +185,11 @@ function buildProfile(
     0,
     0,
     `${processName}: ${threadName}`,
-    'milliseconds'
+    'microseconds'
   );
 
   const stack: ChromeTrace.Event[] = [];
-  const frameCache = new Map<string, Frame>();
+  const frameCache = new Map<string | number, Frame>();
 
   while (beginQueue.length > 0 || endQueue.length > 0) {
     const next = getNextQueue(beginQueue, endQueue);
@@ -274,12 +274,13 @@ function buildProfile(
   return profile.build();
 }
 
-function createFrameInfoFromEvent(event: ChromeTrace.Event) {
+function createFrameInfoFromEvent(event: ChromeTrace.Event): Profiling.FrameInfo {
   const key = JSON.stringify(event.args);
 
   return {
     key,
     name: `${event?.name || 'Unknown'} ${key}`.trim(),
+    meta: event.args,
   };
 }
 
