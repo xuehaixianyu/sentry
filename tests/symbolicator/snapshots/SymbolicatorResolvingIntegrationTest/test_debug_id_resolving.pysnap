@@ -1,5 +1,5 @@
 ---
-created: '2020-07-23T19:33:18.859595Z'
+created: '2022-03-23T10:04:16.522052Z'
 creator: sentry
 source: tests/symbolicator/test_payload_full.py
 ---
@@ -41,6 +41,7 @@ exception:
         package: C:\projects\breakpad-tools\windows\Release\crash.exe
         symbol: null
         trust: null
+      registers: {}
     stacktrace:
       frames:
       - data:
@@ -53,6 +54,7 @@ exception:
         package: C:\projects\breakpad-tools\windows\Release\crash.exe
         symbol: main
         trust: null
+      registers: {}
     thread_id: 1636
     type: EXCEPTION_ACCESS_VIOLATION_WRITE
     value: 'Fatal Error: EXCEPTION_ACCESS_VIOLATION_WRITE'

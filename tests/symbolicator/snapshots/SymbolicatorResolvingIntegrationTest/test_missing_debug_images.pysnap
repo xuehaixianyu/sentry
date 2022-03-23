@@ -1,5 +1,5 @@
 ---
-created: '2020-07-23T19:33:26.234043Z'
+created: '2022-03-23T10:04:21.864336Z'
 creator: sentry
 source: tests/symbolicator/test_payload_full.py
 ---
@@ -30,6 +30,7 @@ exception:
         package: null
         symbol: null
         trust: null
+      registers: {}
     stacktrace:
       frames:
       - data:
@@ -52,6 +53,7 @@ exception:
         package: null
         symbol: null
         trust: null
+      registers: {}
     type: Fail
     value: fail
 stacktrace: null

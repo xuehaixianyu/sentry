@@ -26,10 +26,20 @@ def strip_frame(frame):
     return frame
 
 
+NORMALIZED_REGISTERS = {"eflags": "efl"}
+
+
+def normalize_register(name):
+    return NORMALIZED_REGISTERS.get(name) or name
+
+
 def strip_stacktrace(stacktrace):
     if stacktrace:
         stacktrace = dict(stacktrace)
         stacktrace["frames"] = [strip_frame(x) for x in stacktrace.get("frames") or ()]
+        stacktrace["registers"] = {
+            normalize_register(k): v for k, v in (stacktrace.get("registers") or {}).items()
+        }
 
     return stacktrace
 

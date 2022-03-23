@@ -1,5 +1,5 @@
 ---
-created: '2021-01-05T10:23:58.428788Z'
+created: '2022-03-23T10:22:57.574105Z'
 creator: sentry
 source: tests/symbolicator/test_minidump_full.py
 ---
@@ -319,7 +319,7 @@ exception:
         ecx: '0x10ff670'
         edi: '0x13bfd78'
         edx: '0x7'
-        eflags: '0x10246'
+        efl: '0x10246'
         eip: '0x2a2a3d'
         esi: '0x759c6314'
         esp: '0x10ff644'
@@ -384,7 +384,7 @@ threads:
         ecx: '0x0'
         edi: '0x13b4af0'
         edx: '0x0'
-        eflags: '0x216'
+        efl: '0x216'
         eip: '0x771e016c'
         esi: '0x13b4930'
         esp: '0x159f900'
@@ -439,7 +439,7 @@ threads:
         ecx: '0x0'
         edi: '0x13b7c28'
         edx: '0x0'
-        eflags: '0x202'
+        efl: '0x202'
         eip: '0x771e016c'
         esi: '0x13b7a68'
         esp: '0x169f9f4'
@@ -464,7 +464,7 @@ threads:
         ecx: '0x0'
         edi: '0x17b1a90'
         edx: '0x0'
-        eflags: '0x206'
+        efl: '0x206'
         eip: '0x771df3dc'
         esi: '0x2cc'
         esp: '0x179f2ac'
