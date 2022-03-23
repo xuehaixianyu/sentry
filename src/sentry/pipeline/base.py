@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import logging
 from types import LambdaType
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Mapping, Sequence
 
 from django.views import View
 from rest_framework.request import Request
+from rest_framework.response import Response
 
 from sentry import analytics
+from sentry.db.models import Model
 from sentry.models import Organization
 from sentry.utils.hashlib import md5_text
 from sentry.web.helpers import render_to_response
@@ -47,7 +51,7 @@ class Pipeline:
     session_store_cls = PipelineSessionStore
 
     @classmethod
-    def get_for_request(cls, request):
+    def get_for_request(cls, request: Request) -> Pipeline | None:
         req_state = cls.unpack_state(request)
         if not req_state:
             return None
@@ -62,7 +66,7 @@ class Pipeline:
         )
 
     @classmethod
-    def unpack_state(cls, request) -> Optional[PipelineRequestState]:
+    def unpack_state(cls, request: Request) -> PipelineRequestState | None:
         state = cls.session_store_cls(request, cls.pipeline_name, ttl=INTEGRATION_EXPIRATION_TTL)
         if not state.is_valid():
             return None
@@ -83,8 +87,13 @@ class Pipeline:
         return self.provider_manager.get(provider_key)
 
     def __init__(
-        self, request: Request, provider_key, organization=None, provider_model=None, config=None
-    ):
+        self,
+        request: Request,
+        provider_key: str,
+        organization: Organization | None = None,
+        provider_model: Model | None = None,
+        config: Mapping[str, Any] | None = None,
+    ) -> None:
         self.request = request
         self.organization = organization
         self.state = self.session_store_cls(
@@ -121,7 +130,7 @@ class Pipeline:
     def initialize(self) -> None:
         self.state.regenerate(self.get_initial_state())
 
-    def get_initial_state(self) -> Dict[str, Any]:
+    def get_initial_state(self) -> Mapping[str, Any]:
         return {
             "uid": self.request.user.id if self.request.user.is_authenticated else None,
             "provider_model_id": self.provider_model.id if self.provider_model else None,
@@ -133,10 +142,10 @@ class Pipeline:
             "data": {},
         }
 
-    def clear_session(self):
+    def clear_session(self) -> None:
         self.state.clear()
 
-    def current_step(self):
+    def current_step(self) -> Response:
         """
         Render the current step.
         """
@@ -153,14 +162,14 @@ class Pipeline:
 
         return self.dispatch_to(step)
 
-    def dispatch_to(self, step: View):
+    def dispatch_to(self, step: View) -> Response:
         """Dispatch to a view expected by this pipeline.
 
         A subclass may override this if its views take other parameters.
         """
         return step.dispatch(request=self.request, pipeline=self)
 
-    def error(self, message):
+    def error(self, message: str) -> Response:
         context = {"error": message}
         extra = {
             "organization_id": self.organization.id if self.organization else None,
@@ -172,12 +181,12 @@ class Pipeline:
         logger.error("pipeline error", extra=extra)
         return render_to_response("sentry/pipeline-error.html", context, self.request)
 
-    def render_warning(self, message):
+    def render_warning(self, message: str) -> Response:
         """For situations when we want to display an error without triggering an issue"""
         context = {"error": message}
         return render_to_response("sentry/pipeline-provider-error.html", context, self.request)
 
-    def next_step(self, step_size=1):
+    def next_step(self, step_size: int = 1) -> Response:
         """
         Render the next step.
         """
@@ -196,27 +205,27 @@ class Pipeline:
 
         return self.current_step()
 
-    def get_analytics_entry(self) -> Optional[PipelineAnalyticsEntry]:
+    def get_analytics_entry(self) -> PipelineAnalyticsEntry | None:
         """Return analytics attributes for this pipeline."""
         return None
 
-    def finish_pipeline(self):
+    def finish_pipeline(self) -> None:
         """
         Called when the pipeline completes the final step.
         """
         raise NotImplementedError
 
-    def bind_state(self, key, value):
+    def bind_state(self, key: str, value: Any) -> None:
         data = self.state.data or {}
         data[key] = value
 
         self.state.data = data
 
-    def fetch_state(self, key=None):
+    def fetch_state(self, key: str | None = None) -> Mapping[str, Any] | None:
         data = self.state.data
         if not data:
             return None
         return data if key is None else data.get(key)
 
-    def get_logger(self):
+    def get_logger(self) -> logging.Logger:
         return logging.getLogger(f"sentry.integration.{self.provider.key}")
