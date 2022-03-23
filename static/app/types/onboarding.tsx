@@ -1,3 +1,5 @@
+import {WithRouterProps} from 'react-router';
+
 import {AvatarUser} from './user';
 
 export enum OnboardingTaskKey {
@@ -46,7 +48,7 @@ export type OnboardingTaskDescriptor = {
       location: string;
     }
   | {
-      action: () => void;
+      action: (props: WithRouterProps) => void;
       actionType: 'action';
     }
 );
