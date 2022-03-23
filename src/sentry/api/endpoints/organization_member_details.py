@@ -12,10 +12,7 @@ from sentry import ratelimits, roles
 from sentry.api.bases import OrganizationMemberEndpoint
 from sentry.api.bases.organization import OrganizationPermission
 from sentry.api.serializers import serialize
-from sentry.api.serializers.models.organization_member import (
-    OrganizationMemberWithRolesSerializer,
-    OrganizationMemberWithTeamsSerializer,
-)
+from sentry.api.serializers.models.organization_member import OrganizationMemberWithRolesSerializer
 from sentry.api.serializers.rest_framework import ListField
 from sentry.apidocs.constants import (
     RESPONSE_FORBIDDEN,
@@ -130,7 +127,7 @@ class OrganizationMemberDetailsEndpoint(OrganizationMemberEndpoint):
             MEMBER_ID_PARAM,
         ],
         responses={
-            200: OrganizationMemberWithTeamsSerializer,  # The Sentry response serializer
+            200: OrganizationMemberWithRolesSerializer,  # The Sentry response serializer
             401: RESPONSE_UNAUTHORIZED,
             403: RESPONSE_FORBIDDEN,
             404: RESPONSE_NOTFOUND,
@@ -164,7 +161,7 @@ class OrganizationMemberDetailsEndpoint(OrganizationMemberEndpoint):
     #         MEMBER_ID_PARAM,
     #     ],
     #     responses={
-    #         200: OrganizationMemberWithTeamsSerializer,  # The Sentry response serializer
+    #         200: OrganizationMemberWithRolesSerializer,  # The Sentry response serializer
     #         401: RESPONSE_UNAUTHORIZED,
     #         403: RESPONSE_FORBIDDEN,
     #         404: RESPONSE_NOTFOUND,
