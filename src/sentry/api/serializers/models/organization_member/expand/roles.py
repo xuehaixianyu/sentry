@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Iterable, Mapping, Sequence, cast
 
 from sentry import roles
 from sentry.api.serializers import serialize
@@ -10,6 +10,7 @@ from sentry.models import OrganizationMember, User
 from sentry.roles.manager import Role
 
 from .. import OrganizationMemberWithTeamsSerializer
+from ..response import OrganizationMemberWithRolesResponse
 
 
 class OrganizationMemberWithRolesSerializer(OrganizationMemberWithTeamsSerializer):
@@ -23,14 +24,17 @@ class OrganizationMemberWithRolesSerializer(OrganizationMemberWithTeamsSerialize
         self.can_admin = can_admin
         self.allowed_roles = allowed_roles
 
-    def serialize(  # type: ignore
+    def serialize(
         self,
         obj: OrganizationMember,
         attrs: Mapping[str, Any],
         user: User,
         **kwargs: Any,
-    ) -> Mapping[str, Any]:
-        context = {**super().serialize(obj, attrs, user, **kwargs)}
+    ) -> OrganizationMemberWithRolesResponse:
+        context = cast(
+            OrganizationMemberWithRolesResponse,
+            super().serialize(obj, attrs, user, **kwargs),
+        )
 
         if self.can_admin:
             context["invite_link"] = obj.get_invite_link()
