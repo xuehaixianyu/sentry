@@ -1,13 +1,15 @@
-import {Component} from 'react';
+import {Component, Fragment} from 'react';
 import styled from '@emotion/styled';
 
 import {openModal} from 'sentry/actionCreators/modal';
 import {promptsCheck, promptsUpdate} from 'sentry/actionCreators/prompts';
 import {Client} from 'sentry/api';
 import Alert from 'sentry/components/alert';
+import Button from 'sentry/components/button';
 import SuggestProjectModal from 'sentry/components/modals/suggestProjectModal';
 import {IconClose} from 'sentry/icons';
-import {tct} from 'sentry/locale';
+import {t} from 'sentry/locale';
+import space from 'sentry/styles/space';
 import {Organization, Project} from 'sentry/types';
 import {EntryRequest, Event} from 'sentry/types/event';
 import trackAdvancedAnalyticsEvent from 'sentry/utils/analytics/trackAdvancedAnalyticsEvent';
@@ -191,12 +193,16 @@ class SuggestProjectCTA extends Component<Props, State> {
     return (
       <Alert
         type="info"
-        trailingItems={<StyledIconClose onClick={this.handleCTAClose} />}
+        trailingItems={
+          <Fragment>
+            <StyledButton onClick={this.openModal} size="xsmall">
+              {t('Start Monitoring')}
+            </StyledButton>
+            <StyledIconClose onClick={this.handleCTAClose} />
+          </Fragment>
+        }
       >
-        {tct(
-          'We have a sneaking suspicion you have a mobile app that doesn’t use Sentry. [link:Start Monitoring]',
-          {link: <a onClick={this.openModal} />}
-        )}
+        {t('We have a sneaking suspicion you have a mobile app that doesn’t use Sentry.')}
       </Alert>
     );
   }
@@ -211,4 +217,8 @@ export default withApi(withProjects(SuggestProjectCTA));
 const StyledIconClose = styled(IconClose)`
   margin: auto;
   cursor: pointer;
+`;
+
+const StyledButton = styled(Button)`
+  margin-right: ${space(1)};
 `;
